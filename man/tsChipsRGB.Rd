@@ -5,7 +5,7 @@
 \title{Plot TS Chips (RGB version)}
 \usage{
 tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
-  percNA = 20, nc = 3, nr = 3, ggplot = FALSE, cores = 1,
+  percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE,
   textcol = "white", ...)
 }
 \arguments{
@@ -21,7 +21,7 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 
 \item{ggplot}{Logical. Produce a ggplot time series plot object?}
 
-\item{cores}{Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.}
+\item{export}{Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.}
 
 \item{textcol}{Character. Colour of text showing image date (can also be hexadecimal)}
 
@@ -30,9 +30,11 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 \item{xr/xg/xb}{RasterBrick. Image time series bricks representing the red, green and blue channel, respectively}
 
 \item{nc/nr}{Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.}
+
+\item{show}{Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.}
 }
 \value{
-\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
+\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
 }
 \description{
 Plot image TS chips from 3 raster bricks (as RGB composites) based on a location, area buffer, and time buffer

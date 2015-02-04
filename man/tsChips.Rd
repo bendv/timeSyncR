@@ -6,7 +6,7 @@
 \usage{
 tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
   cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE,
-  hires = NULL)
+  export = FALSE, show = TRUE)
 }
 \arguments{
 \item{x}{RasterBrick. Image time series brick}
@@ -27,12 +27,14 @@ tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
 
 \item{ggplot}{Logical. Produce a ggplot time series plot object?}
 
-\item{hires}{Optional: Location of other hi-res imagery to suset and display, or list of raster objects (already in workspace) to subset and view.}
+\item{export}{Logical. Export processed chips to workspace as a rasterBrick? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.}
+
+\item{show}{Logical. Plot the chips? Can be set to \code{FALSE} if you just want to export the chips as rasterBrick with or without the ggplot object.}
 
 \item{nc/nr}{Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.}
 }
 \value{
-\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
+\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, an object of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
 }
 \description{
 Plot image TS chips based on a location, area buffer, and time buffer
