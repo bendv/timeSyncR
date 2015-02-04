@@ -8,6 +8,5 @@ Maintainer: Ben DeVries <benjamin.devries@wur.nl>
 Description: Visualization of Landsat time series chips. Loosely based on the
     TimeSync method from Cohen et al. (2010), Remote Sensing of Environment.
 Depends:
-    R (>= 3.0.0),
-    bfastSpatial
+    R (>= 3.0.0)
 License: What license is it under?
