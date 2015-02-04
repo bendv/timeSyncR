@@ -52,7 +52,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   } else if(class(loc) == "numeric"){
     e <- extent(c(loc[1] - buff, loc[1] + buff, loc[2] - buff, loc[2] + buff))
   } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
-    if(nrow(loc) > 1){
+    if(length > 1){
       warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
     }
