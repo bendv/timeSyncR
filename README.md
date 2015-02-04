@@ -11,7 +11,7 @@ library(timeSyncR)
 ```
 
 #### Implementation
-(more info to follow soon)
+Check out this [short tutorial](http://bendv.github.io/timeSyncR). This is very much a work in progress...
 
 #### References
 Cohen, W. B., Yang, Z., & Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911–2924. doi:10.1016/j.rse.2010.07.010
