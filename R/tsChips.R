@@ -12,9 +12,10 @@
 #' @param nbks Numeric. Number of breaks in the colour map
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param hires Optional: Location of other hi-res imagery to suset and display, or list of raster objects (already in workspace) to subset and view.
-#' 
-#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
+#' @param export Logical. Export processed chips to workspace as a rasterBrick? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
+#' @param show Logical. Plot the chips? Can be set to \code{FALSE} if you just want to export the chips as rasterBrick with or without the ggplot object.
+#'  
+#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, an object of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
 #' 
 #' @author Ben DeVries
 #' 
@@ -61,7 +62,7 @@
 #' }
 
 
-tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE, hires = NULL) {
+tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, show = TRUE) {
   
   # get sceneinfo
   s <- getSceneinfo(names(x))
@@ -89,7 +90,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   # crop input brick
   xe <- crop(x, e)
   se <- getSceneinfo(names(xe))
-
+  
   # start and end dates
   if(!is.null(start)){
     start <- as.Date(start)
@@ -159,10 +160,40 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
       par(op)
       plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
     } else {
-      xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
-      plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
-      readline("Press any key to continue to next screen: \n")
+      cols <- colorRampPalette(cols)(nbks)
     }
+    # breaks defined based on extreme values
+    minbk <- minValue(xe)
+    if(!any(!is.na(minbk)))
+      stop("No non-NA values in the defined image chips.")
+    minbk <- min(minbk)
+    maxbk <- maxValue(xe)
+    if(!any(!is.na(maxbk)))
+      stop("No non-NA values in the defined image chips.")
+    maxbk <- max(maxbk)
+    breaks <- seq(minbk, maxbk, length = nbks)
+    
+    # plots on separate screens if needed
+    if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
+      addfun <- function() plot(loc, extent = e, add=TRUE)
+    } else {
+      addfun <- function() NULL
+    }
+    op <- par(mfrow = c(nr, nc))
+    pps <- nc * nr
+    nscreens <- ceiling(nlayers(xe) / pps)
+    for(i in seq(1, nlayers(xe), by = pps)){
+      if((nlayers(xe) - i) < pps){
+        xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
+        par(op)
+        plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
+      } else {
+        xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
+        plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
+        readline("Press any key to continue to next screen: \n")
+      }
+    }
+    ######
   }
   
   if(ggplot){
@@ -177,8 +208,13 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     print(p)
   }
   
-  if(ggplot){
+  # decide what to return
+  if(ggplot & export){
+    return(list(tsChips = xe, plot = p))
+  } else if(ggplot & !export) {
     return(p)
+  } else if(!ggplot & export) {
+    return(xe)
   } else {
     return(NULL)
   }

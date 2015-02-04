@@ -10,11 +10,12 @@
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param cores Numeric. Number of cores to use for pre-processing (useful for cropping step). Cannot exceed 3.
+#' @param export Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
+#' @param show Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
-#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases.
+#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
 #' 
 #' @author Ben DeVries
 #' 
@@ -26,19 +27,21 @@
 #' Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 #' 
 
-
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, cores = 1, textcol = "white", ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, textcol = "white", ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
     stop("Input RGB rasterBricks do not compare")
   if(length(unique(nlayers(xr), nlayers(xg), nlayers(xb))) > 1)
     stop("Input RGB rasterBricks have different number of layers")
-    
+  
   x <- list(R = xr, G = xg, B = xb)
   
   # get sceneinfo
   s <- getSceneinfo(names(x$R))
+  
+  # set z-dimensions of each brick
+  x <- lapply(x, FUN=function(x) setZ(x, s$date))
   
   # reformat buffer using image resolution
   buff <- buff * res(x$R)[1]
@@ -61,71 +64,33 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   }
   
   # crop input bricks
-  if(cores > 1) {
-    if(cores > 3)
-      cores <- 3
-    require(doMC)
-    registerDoMC(cores = cores)
-    xe <- foreach(i = 1:length(x)) %dopar% {
-      crop(x[[i]], e)
-    }
-    # start and end dates
-    if(!is.null(start)){
-      start <- as.Date(start)
-      xe <- foreach(i = 1:length(xe)) %dopar% {
-        raster::subset(xe[[i]], subset = which(s$date >= start))
-      }
-    } else {
-      start <- as.Date(min(s$date)) # to be used in ggplot later
-    }
-    if(!is.null(end)){
-      end <- as.Date(end)
-      xe <- foreach(i = 1:length(x)) %dopar% {
-        raster::subset(xe[[i]], subset = which(s$date <= end))
-      }
-    } else {
-      end <- as.Date(max(s$date)) # to be used in ggplot later
-    }    
+  xe <- lapply(x, FUN=function(x) crop(x, e))
   
+  # start and end dates
+  if(!is.null(start)){
+    start <- as.Date(start)
+    xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = which(getZ(x) >= start)))
+    xe <- lapply(xe, FUN=function(x) setZ(x, getSceneinfo(names(x))$date))
   } else {
-    
-    xe <- vector("list", 3)
-    for(i in 1:length(x)){
-      xe[[i]] <- crop(x[[i]], e)
-    }
-    # start and end dates
-    if(!is.null(start)){
-      start <- as.Date(start)
-      for(i in 1:length(xe)){
-        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date >= start))
-      }
-    } else {
-      start <- as.Date(min(s$date)) # to be used in ggplot later
-    }
-    if(!is.null(end)){
-      end <- as.Date(end)
-      for(i in 1:length(x)){
-        xe[[i]] <- raster::subset(xe[[i]], subset = which(s$date <= end))
-      }
-    } else {
-      end <- as.Date(max(s$date)) # to be used in ggplot later
-    }
+    start <- as.Date(min(getZ(xe[[1]]))) # to be used in ggplot later
   }
-  se <- getSceneinfo(names(xe[[1]]))
+  
+  if(!is.null(end)){
+    end <- as.Date(end)
+    xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = which(getZ(x) <= end)))
+    xe <- lapply(xe, FUN=function(x) setZ(x, getSceneinfo(names(x))$date))
+  } else {
+    end <- as.Date(max(getZ(xe[[1]]))) # to be used in ggplot later
+  }  
   
   # reorder scenes
-  for(i in 1:length(xe)){
-    xe[[i]] <- raster::subset(xe[[i]], subset = order(se$date))
-  }
-  se <- getSceneinfo(names(xe[[1]]))
+  xe <- lapply(xe, FUN=function(x) raster::subset(x, subset = order(getZ(x))))
   
   # filter out scenes with too many NA's
   # done on 1st band, assuming mask has been applied uniformly
   if(percNA < 100){
-    nas <- sapply(freq(xe[[1]]), FUN=function(x) as.numeric(x[is.na(x[, 1]), 2] / ncell(xe[[1]]) * 100))
-    nas[which(sapply(nas, length) == 0)] <- 0
-    nas <- unlist(nas)
-    for(i in 1:length(x)){
+    nas <- freq(xe[[1]], value = NA) / ncell(xe[[1]]) * 100
+    for(i in 1:length(xe)){
       if(percNA == 0){
         xe[[i]] <- raster::subset(xe[[i]], subset = which(nas == percNA))
       } else {
@@ -133,10 +98,6 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       }
     }
   }
-  
-  # final sceneinfo data.frame
-  se <- getSceneinfo(names(xe[[1]]))
-  
   
   # function to add spatial data (if present)
   if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
@@ -157,7 +118,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
         b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
         err <- try({
           plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xes[[1]])[j], col = textcol)
         }, silent = TRUE)
         if(class(err) == "try-error")
           plot.new()
@@ -169,20 +130,17 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
         b <- brick(raster(xes[[1]], j), raster(xes[[2]], j), raster(xes[[3]], j))
         err <- try({
           plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = se$date[i + j -1], col = textcol)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xes[[1]])[j], col = textcol)
         }, silent = TRUE)
-        if(class(err) == "try-error")
-          plot.new()
+        #if(class(err) == "try-error")
+        # plot.new()
       }
-          
-      readline("Press any key to continue to next screen: \n")
+      readline("Press any key to see next screen:\n")
     }
   }
-  ## works, but still have to label dates!
   
-  # TODO:
-  # 1. add option to plot one or more RE scenes at end of ts if they are available.
   
+  # final ts plot
   if(ggplot){
     require(ggplot2)
     if(is.numeric(loc)){
@@ -203,8 +161,13 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
     print(p)
   }
   
-  if(ggplot){
+  # decide what to return
+  if(ggplot & export){
+    return(list(tsChips = xe, plot = p))
+  } else if(ggplot & !export) {
     return(p)
+  } else if(!ggplot & export) {
+    return(xe)
   } else {
     return(NULL)
   }
