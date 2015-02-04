@@ -18,8 +18,6 @@
 #' 
 #' @author Ben DeVries
 #' 
-#' @import bfastSpatial
-#' @import RColorBrewer
 #' @import ggplot2
 #' @import reshape2
 #' @export
