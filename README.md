@@ -1,7 +1,7 @@
 # timeSyncR
 
 #### Summary
-Tools to aid visualization and interpretation of Landsat time series in R for calibration/validation of change detection methods. This package is (loosely) based on the TimeSync method (Cohen et al., 2010).
+Tools to aid visualization and interpretation of Landsat time series in R for calibration/validation of change detection methods. This package is (loosely) based on the <a href="http://timesync.forestry.oregonstate.edu/index.html" target="_blank">TimeSync</a> method (Cohen et al., 2010).
 
 #### Installation
 ```
