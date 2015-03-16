@@ -143,14 +143,19 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   # final ts plot
   if(ggplot){
     require(ggplot2)
+    require(reshape2)
     if(is.numeric(loc)){
       s$R <- x$R[cellFromXY(x$R, loc)][1, ]
       s$G <- x$G[cellFromXY(x$G, loc)][1, ]
       s$B <- x$B[cellFromXY(x$B, loc)][1, ]
-    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
+    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
       s$R <- apply(extract(x$R, loc)[[1]], 2, mean)
       s$G <- apply(extract(x$G, loc)[[1]], 2, mean)
       s$B <- apply(extract(x$B, loc)[[1]], 2, mean)
+    } else {
+      s$R <- x$R[cellFromXY(x$R, as.vector(coordinates(loc)))][1, ]
+      s$G <- x$G[cellFromXY(x$G, as.vector(coordinates(loc)))][1, ]
+      s$B <- x$B[cellFromXY(x$B, as.vector(coordinates(loc)))][1, ]
     }
     s <- na.omit(s)
     s <- melt(s, measure.vars = c("R", "G", "B"))
