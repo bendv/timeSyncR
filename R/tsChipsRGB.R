@@ -9,25 +9,25 @@
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
-#' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param export Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
+#' @param plot Logical. Plot individual band time series?
+#' @param exportChips Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)?
+#' @param exportZoo Logical. Export pixel time series as \code{zoo} objects?
 #' @param textcol Character. Colour of text showing image date (can also be hexadecimal)
 #' @param show Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.
+#' @param plotlabs Character. Vector of length 3 indicating the labels for each of the zoo plots (if \code{plot=TRUE})
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
 #' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
 #' 
 #' @author Ben DeVries
 #' 
-#' @import ggplot2
-#' @import reshape2
 #' @export
 #' 
 #' @references
 #' Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 #' 
 
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, textcol = "white", ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -140,39 +140,48 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   }
   
   
-  # final ts plot
-  if(ggplot){
-    require(ggplot2)
-    require(reshape2)
+  # prepare zoo objects
+  if(plot | exportZoo){
+    readline("Press any key to view time series plots: \n")
     if(is.numeric(loc)){
-      s$R <- x$R[cellFromXY(x$R, loc)][1, ]
-      s$G <- x$G[cellFromXY(x$G, loc)][1, ]
-      s$B <- x$B[cellFromXY(x$B, loc)][1, ]
-    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")){
-      s$R <- apply(extract(x$R, loc)[[1]], 2, mean)
-      s$G <- apply(extract(x$G, loc)[[1]], 2, mean)
-      s$B <- apply(extract(x$B, loc)[[1]], 2, mean)
+      z <- list(R = x$R[cellFromXY(x$R, loc)][1, ],
+                G = x$G[cellFromXY(x$G, loc)][1, ],
+                B = x$B[cellFromXY(x$B, loc)][1, ])
+    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")) {
+      z <- list(R = apply(extract(x$R, loc)[[1]], 2, mean),
+                G = apply(extract(x$G, loc)[[1]], 2, mean),
+                B = apply(extract(x$B, loc)[[1]], 2, mean))
     } else {
-      s$R <- x$R[cellFromXY(x$R, as.vector(coordinates(loc)))][1, ]
-      s$G <- x$G[cellFromXY(x$G, as.vector(coordinates(loc)))][1, ]
-      s$B <- x$B[cellFromXY(x$B, as.vector(coordinates(loc)))][1, ]
+      z <- list(R = x$R[cellFromXY(x$R, as.vector(coordinates(loc)))][1, ],
+                G = x$G[cellFromXY(x$G, as.vector(coordinates(loc)))][1, ],
+                B = x$B[cellFromXY(x$B, as.vector(coordinates(loc)))][1, ])
     }
-    s <- na.omit(s)
-    s <- melt(s, measure.vars = c("R", "G", "B"))
-    names(s) <- c("sensor", "path", "row", "date", "channel", "value")
+    z <- lapply(z, FUN=function(x) zoo(x, s$date))
+    z <- lapply(z, na.omit)
+    z <- lapply(z, FUN=function(x) window(x, start = start, end = end))
+  }
+  
+  # plot
+  if(plot) {
+    lo <- matrix(c(1:3), nr=3, nc=1)
+    layout(lo)
+    op <- par(mar = c(0, 5, 0, 5), oma = c(3, 3, 3, 3))
+    plot(z$R, xlab = '', xaxt = 'n', type = 'b', pch = '*', ylab = plotlabs[1], col = 'red')
+    plot(z$G, xlab = '', xaxt = 'n', yaxt = 'n', type = 'b', pch = '*', ylab = plotlabs[2], col = 'dark green')
+    axis(4)
+    plot(z$B, xlab = '', xaxt = 'n', type = 'b', pch = '*', ylab = plotlabs[3], col = 'blue')
+    datelab <- seq.Date(as.Date(start), as.Date(end), by = '1 year')
+    axis(1, at = datelab, labels = format(datelab, format = '%Y'))
     
-    p <- ggplot(data = s, aes(x = date, y = value)) + theme_bw() + scale_x_date(limits = c(start, end)) + geom_line(lty = 2, aes(colour = channel))
-    readline("Press any key to view time series plot: \n")
-    print(p)
   }
   
   # decide what to return
-  if(ggplot & export){
-    return(list(tsChips = xe, plot = p))
-  } else if(ggplot & !export) {
-    return(p)
-  } else if(!ggplot & export) {
+  if(exportChips & exportZoo){
+    return(list(tsChips = xe, zoo = z))
+  } else if(exportChips & !exportZoo) {
     return(xe)
+  } else if(!exportChips & exportZoo) {
+    return(z)
   } else {
     return(NULL)
   }

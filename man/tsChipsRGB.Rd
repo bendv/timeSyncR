@@ -5,8 +5,9 @@
 \title{Plot TS Chips (RGB version)}
 \usage{
 tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
-  percNA = 20, nc = 3, nr = 3, ggplot = FALSE, export = FALSE,
-  textcol = "white", ...)
+  percNA = 20, nc = 3, nr = 3, plot = FALSE, exportChips = FALSE,
+  exportZoo = FALSE, textcol = "white", plotlabs = c("red", "green",
+  "blue"), ...)
 }
 \arguments{
 \item{loc}{Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons or SpatialPoints object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)}
@@ -19,11 +20,15 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 
 \item{percNA}{Numeric. Maximum allowable \% NA in the cropped image chips}
 
-\item{ggplot}{Logical. Produce a ggplot time series plot object?}
+\item{plot}{Logical. Plot individual band time series?}
 
-\item{export}{Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.}
+\item{exportChips}{Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)?}
+
+\item{exportZoo}{Logical. Export pixel time series as \code{zoo} objects?}
 
 \item{textcol}{Character. Colour of text showing image date (can also be hexadecimal)}
+
+\item{plotlabs}{Character. Vector of length 3 indicating the labels for each of the zoo plots (if \code{plot=TRUE})}
 
 \item{...}{Arguments to be passed to \code{\link{plotRGB}}}
 
