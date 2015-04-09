@@ -23,6 +23,7 @@
 #' 
 #' @author Ben DeVries
 #' 
+#' @import zoo
 #' @export
 #' 
 #' @references
