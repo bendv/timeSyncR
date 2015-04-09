@@ -17,7 +17,9 @@
 #' @param plotlabs Character. Vector of length 3 indicating the labels for each of the zoo plots (if \code{plot=TRUE})
 #' @param ... Arguments to be passed to \code{\link{plotRGB}}
 #' 
-#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
+#' @return \code{NULL} if \code{exportZoo = FALSE} and \code{exportChips = FALSE} or a list of \code{zoo} time series objects if \code{exportZoo = TRUE}, or a list of subsetted and cropped rasterBricks if \code{exportChips = TRUE}, with the side effect of time series chips being plotted in all cases. If both \code{exportChips} and \code{exportZoo} are \code{TRUE}, a list consisting both lists will be returned.
+#' 
+#' @details see \link{http://bendv.github.io/timeSyncR/} for a short tutorial on \code{tsChipsRGB}
 #' 
 #' @author Ben DeVries
 #' 

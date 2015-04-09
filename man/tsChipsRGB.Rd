@@ -39,10 +39,13 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 \item{show}{Logical. Show image chips? Set to \code{FALSE} if you just want to export them to rasterBricks and/or export the \code{ggplot} object without viewing the chips.}
 }
 \value{
-\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, a list of objects of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a list of rasterBricks and a ggplot object.
+\code{NULL} if \code{exportZoo = FALSE} and \code{exportChips = FALSE} or a list of \code{zoo} time series objects if \code{exportZoo = TRUE}, or a list of subsetted and cropped rasterBricks if \code{exportChips = TRUE}, with the side effect of time series chips being plotted in all cases. If both \code{exportChips} and \code{exportZoo} are \code{TRUE}, a list consisting both lists will be returned.
 }
 \description{
 Plot image TS chips from 3 raster bricks (as RGB composites) based on a location, area buffer, and time buffer
+}
+\details{
+see \link{http://bendv.github.io/timeSyncR/} for a short tutorial on \code{tsChipsRGB}
 }
 \author{
 Ben DeVries
