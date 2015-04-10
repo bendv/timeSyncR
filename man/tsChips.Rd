@@ -62,6 +62,16 @@ tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = "Greens")
 tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("red", "yellow", "blue"))
 tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
 
+# export image chips as a raster brick
+chips <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", percNA = 0, exportChips = TRUE)
+chips2 <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", percNA = 100, exportChips = TRUE)
+nlayers(chips)
+nlayers(chips2)
+
+# export centre pixel time series as a zoo object
+z <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", exportZoo = TRUE)
+plot(z)
+
 # draw a custom SpatialPoygons object and plot around that
 plot(tura, 42)
 pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done

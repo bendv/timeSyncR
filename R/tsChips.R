@@ -47,6 +47,16 @@
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("red", "yellow", "blue"))
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
 #' 
+#' # export image chips as a raster brick
+#' chips <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", percNA = 0, exportChips = TRUE)
+#' chips2 <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", percNA = 100, exportChips = TRUE)
+#' nlayers(chips)
+#' nlayers(chips2)
+#' 
+#' # export centre pixel time series as a zoo object
+#' z <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", exportZoo = TRUE)
+#' plot(z)
+#' 
 #' # draw a custom SpatialPoygons object and plot around that
 #' plot(tura, 42)
 #' pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done
@@ -163,8 +173,6 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     }
   }
   
-  
-  ### FIX ME:
   # prepare zoo objects
   if(plot | exportZoo){
     if(is.numeric(loc)){
@@ -182,7 +190,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     z <- window(z, start = start, end = end)
   }
   
-  # plot
+  # plot pixel time series
   if(plot) {
     readline("Press any key to view time series plots: \n")
     par(mfrow = c(1, 1))
