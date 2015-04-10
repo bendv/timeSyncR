@@ -5,8 +5,8 @@
 \title{Plot TS Chips}
 \usage{
 tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
-  cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE,
-  export = FALSE, show = TRUE)
+  cols = "PiYG", nbks = 35, nc = 3, nr = 3, plot = FALSE,
+  plotlab = "data", exportChips = FALSE, exportZoo = FALSE, show = TRUE)
 }
 \arguments{
 \item{x}{RasterBrick. Image time series brick}
@@ -25,9 +25,13 @@ tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
 
 \item{nbks}{Numeric. Number of breaks in the colour map}
 
-\item{ggplot}{Logical. Produce a ggplot time series plot object?}
+\item{plot}{Logical. Plot pixel time series?}
 
-\item{export}{Logical. Export processed chips to workspace as a rasterBrick? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.}
+\item{plotlab}{Character. y-axis label for the pixel time series plot.}
+
+\item{exportChips}{Logical. Export processed chips to workspace as a rasterBrick?}
+
+\item{exportZoo}{Logical. Export pixel time series as a zoo object?}
 
 \item{show}{Logical. Plot the chips? Can be set to \code{FALSE} if you just want to export the chips as rasterBrick with or without the ggplot object.}
 
@@ -47,15 +51,7 @@ data(tura)
 tsChips(tura, loc = c(820796, 831198))
 tsChips(tura, loc = c(820796, 831198), buff = 50) # zoom out
 tsChips(tura, loc = c(820796, 831198), buff = 50, percNA = 80) # allow more NA's in field of view
-tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01", ggplot = TRUE) # restrict dates and produce pixel time series plot afterwards
-
-# store a ggplot object in workspace
-p <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", ggplot = TRUE)
-# add layers to the plot
-p <- p + geom_point(col = "blue")
-p <- p + geom_line(col = "red", lty = 2)
-p <- p + labs(y = "NDVI")
-p <- p + scale_y_continuous(limits = c(0, 10000), breaks = c(0, 2500, 5000, 7500, 10000), labels = c("0.0", "0.25", "0.50", "0.75", "1.0"))
+tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01", plot = TRUE, plotlab = 'NDVI') # restrict dates and produce pixel time series plot afterwards
 
 # alternative colour scales
 library(RColorBrewer)
@@ -67,11 +63,11 @@ tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("red", "ye
 tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
 
 # draw a custom SpatialPoygons object and plot around that
-plot(tura, 6)
+plot(tura, 42)
 pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done
 projection(pol) <- projection(tura)
-plot(tura, 6); plot(pol, add=TRUE)
-tsChips(tura, loc = pol, start = "1999-01-01", ggplot = TRUE)
+plot(tura, 42); plot(pol, add=TRUE)
+tsChips(tura, loc = pol, start = "1999-01-01", plot = TRUE, plotlab = 'NDVI')
 }
 }
 \author{

@@ -36,15 +36,7 @@
 #' tsChips(tura, loc = c(820796, 831198))
 #' tsChips(tura, loc = c(820796, 831198), buff = 50) # zoom out
 #' tsChips(tura, loc = c(820796, 831198), buff = 50, percNA = 80) # allow more NA's in field of view
-#' tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01", ggplot = TRUE) # restrict dates and produce pixel time series plot afterwards
-#' 
-#' # store a ggplot object in workspace
-#' p <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", ggplot = TRUE)
-#' # add layers to the plot
-#' p <- p + geom_point(col = "blue")
-#' p <- p + geom_line(col = "red", lty = 2)
-#' p <- p + labs(y = "NDVI")
-#' p <- p + scale_y_continuous(limits = c(0, 10000), breaks = c(0, 2500, 5000, 7500, 10000), labels = c("0.0", "0.25", "0.50", "0.75", "1.0"))
+#' tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01", plot = TRUE, plotlab = 'NDVI') # restrict dates and produce pixel time series plot afterwards
 #' 
 #' # alternative colour scales
 #' library(RColorBrewer)
@@ -56,11 +48,11 @@
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
 #' 
 #' # draw a custom SpatialPoygons object and plot around that
-#' plot(tura, 6)
+#' plot(tura, 42)
 #' pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done
 #' projection(pol) <- projection(tura)
-#' plot(tura, 6); plot(pol, add=TRUE)
-#' tsChips(tura, loc = pol, start = "1999-01-01", ggplot = TRUE)
+#' plot(tura, 42); plot(pol, add=TRUE)
+#' tsChips(tura, loc = pol, start = "1999-01-01", plot = TRUE, plotlab = 'NDVI')
 #' }
 
 
