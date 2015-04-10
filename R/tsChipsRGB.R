@@ -24,6 +24,7 @@
 #' @author Ben DeVries
 #' 
 #' @import zoo
+#' @import raster
 #' @export
 #' 
 #' @references
