@@ -17,11 +17,12 @@
 #' @param exportZoo Logical. Export pixel time series as a zoo object?
 #' @param show Logical. Plot the chips? Can be set to \code{FALSE} if you just want to export the chips as rasterBrick with or without the ggplot object.
 #'  
-#' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, an object of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
+#' @return \code{NULL} if \code{exportChips = FALSE} and \code{exportZoo = FALSE}, with the side effect of time series chips being plotted. If \code{exportChips = TRUE}, an object of type \code{RasterBrick}. if \code{exportZoo = TRUE}, an object of type \code{zoo}.
 #' 
 #' @author Ben DeVries
 #' 
 #' @import raster
+#' @import zoo
 #' @import RColorBrewer
 #' @export
 #' 

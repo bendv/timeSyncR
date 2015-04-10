@@ -38,7 +38,7 @@ tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
 \item{nc/nr}{Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.}
 }
 \value{
-\code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, an object of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
+\code{NULL} if \code{exportChips = FALSE} and \code{exportZoo = FALSE}, with the side effect of time series chips being plotted. If \code{exportChips = TRUE}, an object of type \code{RasterBrick}. if \code{exportZoo = TRUE}, an object of type \code{zoo}.
 }
 \description{
 Plot image TS chips based on a location, area buffer, and time buffer

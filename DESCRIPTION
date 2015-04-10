@@ -10,4 +10,5 @@ Description: Tools for visualization of Landsat time series data. Loosely based 
 Depends:
     R (>= 3.0.0),
     raster
+    zoo
 License: What license is it under?
