@@ -145,7 +145,6 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   
   # prepare zoo objects
   if(plot | exportZoo){
-    readline("Press any key to view time series plots: \n")
     if(is.numeric(loc)){
       z <- list(R = x$R[cellFromXY(x$R, loc)][1, ],
                 G = x$G[cellFromXY(x$G, loc)][1, ],
@@ -166,6 +165,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   
   # plot
   if(plot) {
+    readline("Press any key to view time series plots: \n")
     lo <- matrix(c(1:3), nr=3, nc=1)
     layout(lo)
     op <- par(mar = c(0, 5, 0, 5), oma = c(3, 3, 3, 3))
