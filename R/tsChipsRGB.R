@@ -175,7 +175,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
     plot(z$B, xlab = '', xaxt = 'n', type = 'b', pch = '*', ylab = plotlabs[3], col = 'blue')
     datelab <- seq.Date(as.Date(start), as.Date(end), by = '1 year')
     axis(1, at = datelab, labels = format(datelab, format = '%Y'))
-    
+    par(op)
   }
   
   # decide what to return
