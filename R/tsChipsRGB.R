@@ -154,6 +154,11 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       z <- list(R = apply(extract(x$R, loc)[[1]], 2, mean),
                 G = apply(extract(x$G, loc)[[1]], 2, mean),
                 B = apply(extract(x$B, loc)[[1]], 2, mean))
+    } else if(class(loc) == 'Extent') {
+      loc <- c(mean(xmin(e), xmax(e)), mean(ymin(e), ymax(e)))
+      z <- list(R = x$R[cellFromXY(x$R, loc)][1, ],
+                G = x$G[cellFromXY(x$G, loc)][1, ],
+                B = x$B[cellFromXY(x$B, loc)][1, ])
     } else {
       z <- list(R = x$R[cellFromXY(x$R, as.vector(coordinates(loc)))][1, ],
                 G = x$G[cellFromXY(x$G, as.vector(coordinates(loc)))][1, ],
