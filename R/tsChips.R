@@ -11,16 +11,18 @@
 #' @param cols Character. Name of colour map to use (see display.brewer.all()) or a character vector with two or more colour names or hexadecimal values (as strings) between which to interpolate.
 #' @param nbks Numeric. Number of breaks in the colour map
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
-#' @param ggplot Logical. Produce a ggplot time series plot object?
-#' @param export Logical. Export processed chips to workspace as a rasterBrick? If \code{TRUE} and \code{ggplot = TRUE} as well, then both will be exported as a list object.
+#' @param plot Logical. Plot pixel time series?
+#' @param plotlab Character. y-axis label for the pixel time series plot.
+#' @param exportChips Logical. Export processed chips to workspace as a rasterBrick?
+#' @param exportZoo Logical. Export pixel time series as a zoo object?
 #' @param show Logical. Plot the chips? Can be set to \code{FALSE} if you just want to export the chips as rasterBrick with or without the ggplot object.
 #'  
 #' @return \code{NULL} if \code{ggplot = FALSE} or an object of class \code{ggplot} if \code{ggplot = TRUE}, with the side effect of time series chips being plotted in both cases. If \code{export = TRUE}, an object of class rasterBrick, and if both \code{ggplot} and \code{export} are \code{TRUE}, a list including a rasterBrick and a ggplot object.
 #' 
 #' @author Ben DeVries
 #' 
+#' @import raster
 #' @import RColorBrewer
-#' @import ggplot2
 #' @export
 #' 
 #' @references
@@ -34,15 +36,7 @@
 #' tsChips(tura, loc = c(820796, 831198))
 #' tsChips(tura, loc = c(820796, 831198), buff = 50) # zoom out
 #' tsChips(tura, loc = c(820796, 831198), buff = 50, percNA = 80) # allow more NA's in field of view
-#' tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01", ggplot = TRUE) # restrict dates and produce pixel time series plot afterwards
-#' 
-#' # store a ggplot object in workspace
-#' p <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", ggplot = TRUE)
-#' # add layers to the plot
-#' p <- p + geom_point(col = "blue")
-#' p <- p + geom_line(col = "red", lty = 2)
-#' p <- p + labs(y = "NDVI")
-#' p <- p + scale_y_continuous(limits = c(0, 10000), breaks = c(0, 2500, 5000, 7500, 10000), labels = c("0.0", "0.25", "0.50", "0.75", "1.0"))
+#' tsChips(tura, loc = c(820796, 831198), start = "2007-01-01", end = "2012-01-01", plot = TRUE, plotlab = 'NDVI') # restrict dates and produce pixel time series plot afterwards
 #' 
 #' # alternative colour scales
 #' library(RColorBrewer)
@@ -53,16 +47,26 @@
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("red", "yellow", "blue"))
 #' tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", cols = c("#DEEBF7", "#3182BD"))
 #' 
+#' # export image chips as a raster brick
+#' chips <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", percNA = 0, exportChips = TRUE)
+#' chips2 <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", percNA = 100, exportChips = TRUE)
+#' nlayers(chips)
+#' nlayers(chips2)
+#' 
+#' # export centre pixel time series as a zoo object
+#' z <- tsChips(tura, loc = c(820796, 831198), start = "1999-01-01", exportZoo = TRUE)
+#' plot(z)
+#' 
 #' # draw a custom SpatialPoygons object and plot around that
-#' plot(tura, 6)
+#' plot(tura, 42)
 #' pol <- drawPoly(sp = TRUE) # click 'Finish' in plot window when done
 #' projection(pol) <- projection(tura)
-#' plot(tura, 6); plot(pol, add=TRUE)
-#' tsChips(tura, loc = pol, start = "1999-01-01", ggplot = TRUE)
+#' plot(tura, 42); plot(pol, add=TRUE)
+#' tsChips(tura, loc = pol, start = "1999-01-01", plot = TRUE, plotlab = 'NDVI')
 #' }
 
 
-tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, ggplot = FALSE, export = FALSE, show = TRUE) {
+tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, plot = FALSE, plotlab = 'data', exportChips = FALSE, exportZoo = FALSE, show = TRUE) {
   
   # get sceneinfo
   s <- getSceneinfo(names(x))
@@ -134,6 +138,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   } else {
     cols <- colorRampPalette(cols)(nbks)
   }
+  
   # breaks defined based on extreme values
   minbk <- minValue(xe)
   if(!any(!is.na(minbk)))
@@ -145,76 +150,60 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   maxbk <- max(maxbk)
   breaks <- seq(minbk, maxbk, length = nbks)
   
-  # plots on separate screens if needed
+  # add polygon or point to plot if given
   if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
     addfun <- function() plot(loc, extent = e, add=TRUE)
   } else {
     addfun <- function() NULL
   }
+  
+  # plots
   op <- par(mfrow = c(nr, nc))
   pps <- nc * nr
   nscreens <- ceiling(nlayers(xe) / pps)
   for(i in seq(1, nlayers(xe), by = pps)){
-    if((nlayers(xe) - i) <= pps){
+    if((nlayers(xe) - i) < pps){
       xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
       par(op)
       plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
     } else {
-      cols <- colorRampPalette(cols)(nbks)
+      xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
+      plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
+      readline("Press any key to continue to next screen: \n")
     }
-    # breaks defined based on extreme values
-    minbk <- minValue(xe)
-    if(!any(!is.na(minbk)))
-      stop("No non-NA values in the defined image chips.")
-    minbk <- min(minbk)
-    maxbk <- maxValue(xe)
-    if(!any(!is.na(maxbk)))
-      stop("No non-NA values in the defined image chips.")
-    maxbk <- max(maxbk)
-    breaks <- seq(minbk, maxbk, length = nbks)
-    
-    # plots on separate screens if needed
-    if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
-      addfun <- function() plot(loc, extent = e, add=TRUE)
-    } else {
-      addfun <- function() NULL
-    }
-    op <- par(mfrow = c(nr, nc))
-    pps <- nc * nr
-    nscreens <- ceiling(nlayers(xe) / pps)
-    for(i in seq(1, nlayers(xe), by = pps)){
-      if((nlayers(xe) - i) < pps){
-        xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
-        par(op)
-        plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
-      } else {
-        xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
-        plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
-        readline("Press any key to continue to next screen: \n")
-      }
-    }
-    ######
   }
   
-  if(ggplot){
-    require(ggplot2)
+  # prepare zoo objects
+  if(plot | exportZoo){
     if(is.numeric(loc)){
-      s$response <- x[cellFromXY(x, loc)][1, ]
-    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
-      s$response <- apply(extract(x, loc)[[1]], 2, mean)
+      z <- x[cellFromXY(x, loc)][1, ]
+    } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")) {
+      z <- apply(extract(x, loc)[[1]], 2, mean)
+    } else if(class(loc) == 'Extent') {
+      loc <- c(mean(xmin(e), xmax(e)), mean(ymin(e), ymax(e)))
+      z <- x[cellFromXY(x, loc)][1, ]
+    } else {
+      z <- x$R[cellFromXY(x$R, as.vector(coordinates(loc)))][1, ]
     }
-    p <- ggplot(data = na.omit(s), aes(x = date, y = response)) + geom_point() + theme_bw() + scale_x_date(limits = c(start, end))
-    readline("Press any key to view time series plot: \n")
-    print(p)
+    z <- zoo(z, s$date)
+    z <- na.omit(z)
+    z <- window(z, start = start, end = end)
+  }
+  
+  # plot pixel time series
+  if(plot) {
+    readline("Press any key to view time series plots: \n")
+    par(mfrow = c(1, 1))
+    plot(z, xlab = 'Time', type = 'b', pch = '*', ylab = plotlab)
   }
   
   # decide what to return
-  if(ggplot & export){
-    return(list(tsChips = xe, plot = p))
-  } else if(ggplot & !export) {
-    return(p)
-  } else if(!ggplot & export) {
+  if(exportChips & exportZoo){
+    return(list(tsChips = xe, zoo = z))
+  } else if(exportChips & !exportZoo) {
     return(xe)
+  } else if(!exportChips & exportZoo) {
+    return(z)
   } else {
     return(NULL)
   }
