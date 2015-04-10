@@ -12,3 +12,4 @@ Depends:
     raster,
     zoo
 License: What license is it under?
+Encoding: UTF-8
