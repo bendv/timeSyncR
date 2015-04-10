@@ -4,6 +4,7 @@
 - ```ggplot``` option in ```tsChipsRGB()``` replaced by ```plot```, which plots zoo objects instead of using ggplot2
 - ability to export RGB chips as a list of raster bricks added (```exportChips```)
 - ability to export centre pixel time series as a list of zoo objects added (```exportZoo```)
+- ```tsChips()``` updated. See ```?tsChips``` for more info.
 - [tutorial](http://bendv.github.io/timeSyncR) updated
 
 # timeSyncR
