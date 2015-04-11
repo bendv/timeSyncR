@@ -60,11 +60,9 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       warning("only taking the 1st feature of loc")
       loc <- loc[1, ]
     }
-    e <- extent(loc)
-    e <- extent(c(xmin(e) - buff, xmax(e) + buff, ymin(e) - buff, ymax(e) + buff))
+    e <- extent(loc) + buff
   } else if(class(loc) == "extent"){
-    e <- loc
-    e <- extent(c(xmin(e) - buff, xmax(e) + buff, ymin(e) - buff, ymax(e) + buff))
+    e <- loc + buff
   }
   
   # crop input bricks
