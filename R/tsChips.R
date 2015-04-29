@@ -184,7 +184,7 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
       loc <- c(mean(xmin(e), xmax(e)), mean(ymin(e), ymax(e)))
       z <- x[cellFromXY(x, loc)][1, ]
     } else {
-      z <- x$R[cellFromXY(x$R, as.vector(coordinates(loc)))][1, ]
+      z <- x[cellFromXY(x, as.vector(coordinates(loc)))][1, ]
     }
     z <- zoo(z, s$date)
     z <- na.omit(z)
