@@ -81,13 +81,17 @@ tsComp <- function(x, loc, fun = mean, na.rm = TRUE, start = NULL, end = NULL, b
   
   # breaks defined based on extreme values
   minbk <- minValue(xcomp)
+  minbk[minbk == -Inf] <- NA
   if(all(is.na(minbk)))
     stop("No non-NA values in the defined image chips.")
-  minbk <- min(minbk)
+  minbk <- min(minbk, na.rm = TRUE)
   maxbk <- maxValue(xcomp)
+  maxbk[maxbk == Inf] <- NA
   if(all(is.na(maxbk)))
     stop("No non-NA values in the defined image chips.")
-  maxbk <- max(maxbk)
+  maxbk <- max(maxbk, na.rm = TRUE)
+  print(minbk)
+  print(maxbk)
   breaks <- seq(minbk, maxbk, length = nbks)
   
   # add polygon or point to plot if given
@@ -116,14 +120,14 @@ tsComp <- function(x, loc, fun = mean, na.rm = TRUE, start = NULL, end = NULL, b
   # prepare zoo objects
   if(plot | exportZoo){
     if(is.numeric(loc)){
-      z <- x[cellFromXY(xcomp, loc)][1, ]
+      z <- xcomp[cellFromXY(xcomp, loc)][1, ]
     } else if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame")) {
       z <- apply(extract(xcomp, loc)[[1]], 2, mean)
     } else if(class(loc) == 'Extent') {
       loc <- c(mean(xmin(e), xmax(e)), mean(ymin(e), ymax(e)))
-      z <- x[cellFromXY(xcomp, loc)][1, ]
+      z <- xcomp[cellFromXY(xcomp, loc)][1, ]
     } else {
-      z <- x[cellFromXY(xcomp, as.vector(coordinates(loc)))][1, ]
+      z <- xcomp[cellFromXY(xcomp, as.vector(coordinates(loc)))][1, ]
     }
     z <- zoo(z, yrs)
     z <- na.omit(z)
