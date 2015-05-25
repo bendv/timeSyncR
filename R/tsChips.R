@@ -133,44 +133,46 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   se <- getSceneinfo(names(xe))
   
   # colour map
-  if(length(cols) == 1){
-    require(RColorBrewer)
-    cols <- colorRampPalette(brewer.pal(9, cols))(nbks)
-  } else {
-    cols <- colorRampPalette(cols)(nbks)
-  }
-  
-  # breaks defined based on extreme values
-  minbk <- minValue(xe)
-  if(!any(!is.na(minbk)))
-    stop("No non-NA values in the defined image chips.")
-  minbk <- min(minbk)
-  maxbk <- maxValue(xe)
-  if(!any(!is.na(maxbk)))
-    stop("No non-NA values in the defined image chips.")
-  maxbk <- max(maxbk)
-  breaks <- seq(minbk, maxbk, length = nbks)
-  
-  # add polygon or point to plot if given
-  if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
-    addfun <- function() plot(loc, extent = e, add=TRUE)
-  } else {
-    addfun <- function() NULL
-  }
-  
-  # plots
-  op <- par(mfrow = c(nr, nc))
-  pps <- nc * nr
-  nscreens <- ceiling(nlayers(xe) / pps)
-  for(i in seq(1, nlayers(xe), by = pps)){
-    if((nlayers(xe) - i) < pps){
-      xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
-      par(op)
-      plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
+  if(show){
+    if(length(cols) == 1){
+      require(RColorBrewer)
+      cols <- colorRampPalette(brewer.pal(9, cols))(nbks)
     } else {
-      xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
-      plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
-      readline("Press any key to continue to next screen: \n")
+      cols <- colorRampPalette(cols)(nbks)
+    }
+    
+    # breaks defined based on extreme values
+    minbk <- minValue(xe)
+    if(!any(!is.na(minbk)))
+      stop("No non-NA values in the defined image chips.")
+    minbk <- min(minbk)
+    maxbk <- maxValue(xe)
+    if(!any(!is.na(maxbk)))
+      stop("No non-NA values in the defined image chips.")
+    maxbk <- max(maxbk)
+    breaks <- seq(minbk, maxbk, length = nbks)
+    
+    # add polygon or point to plot if given
+    if(class(loc) %in% c("SpatialPolygons", "SpatialPolygonsDataFrame", "SpatialPoints", "SpatialPointsDataFrame")){
+      addfun <- function() plot(loc, extent = e, add=TRUE)
+    } else {
+      addfun <- function() NULL
+    }
+    
+    # plots
+    op <- par(mfrow = c(nr, nc))
+    pps <- nc * nr
+    nscreens <- ceiling(nlayers(xe) / pps)
+    for(i in seq(1, nlayers(xe), by = pps)){
+      if((nlayers(xe) - i) < pps){
+        xes <- raster::subset(xe, subset = c(i:nlayers(xe)))
+        par(op)
+        plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
+      } else {
+        xes <- raster::subset(xe, subset = c(i:(i + pps - 1)))
+        plot(xes, breaks = breaks, col = cols, main = getSceneinfo(names(xes))$date, legend=FALSE, nc = nc, nr = nr, addfun = addfun)
+        readline("Press any key to continue to next screen: \n")
+      }
     }
   }
   
@@ -193,7 +195,8 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
   
   # plot pixel time series
   if(plot) {
-    readline("Press any key to view time series plots: \n")
+    if(show)
+      readline("Press any key to view time series plots: \n")
     par(mfrow = c(1, 1))
     plot(z, xlab = 'Time', type = 'b', pch = '*', ylab = plotlab)
   }
