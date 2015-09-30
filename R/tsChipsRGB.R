@@ -8,6 +8,7 @@
 #' @param start Date. OptionaL: earliest date ("yyyy-dd-mm") to display.
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
+#' @param excludeDates Date. Vector of dates to be excluded from display. These must be in the format "%Y-%m-%d"
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
 #' @param plot Logical. Plot individual band time series?
 #' @param exportChips Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)?
@@ -31,7 +32,7 @@
 #' Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 #' 
 
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, nc = 3, nr = 3, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, excludeDates = NULL, nc = 3, nr = 3, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -98,6 +99,14 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
       } else {
         xe[[i]] <- raster::subset(xe[[i]], subset = which(nas < percNA))
       }
+    }
+  }
+  
+  # filter out scenes in excludeDates
+  if(!is.null(excludeDates)) {
+    excludeDates <- as.Date(excludeDates, format = "%Y-%m-%d")
+    for(i in 1:length(xe)) {
+      xe[[i]] <- raster::subset(xe[[i]], subset = which(!getZ(xe[[i]]) %in% excludeDates))
     }
   }
   

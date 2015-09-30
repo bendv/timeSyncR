@@ -8,6 +8,7 @@
 #' @param start Date. OptionaL: earliest date ("yyyy-dd-mm") to display.
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
+#' @param excludeDates Date. Vector of dates to be excluded from display. These must be in the format "%Y-%m-%d"
 #' @param cols Character. Name of colour map to use (see display.brewer.all()) or a character vector with two or more colour names or hexadecimal values (as strings) between which to interpolate.
 #' @param nbks Numeric. Number of breaks in the colour map
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
@@ -67,7 +68,7 @@
 #' }
 
 
-tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, cols = "PiYG", nbks = 35, nc = 3, nr = 3, plot = FALSE, plotlab = 'data', exportChips = FALSE, exportZoo = FALSE, show = TRUE) {
+tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, excludeDates = NULL, cols = "PiYG", nbks = 35, nc = 3, nr = 3, plot = FALSE, plotlab = 'data', exportChips = FALSE, exportZoo = FALSE, show = TRUE) {
   
   # get sceneinfo
   s <- getSceneinfo(names(x))
@@ -127,6 +128,13 @@ tsChips <- function(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20, co
     xe <- raster::subset(xe, subset = which(nas == percNA))
   } else {
     xe <- raster::subset(xe, subset = which(nas < percNA))
+  }
+  
+  # filter out scenes in excludeDates
+  if(!is.null(excludeDates)) {
+    excludeDates <- as.Date(excludeDates, format = "%Y-%m-%d")
+    se <- getSceneinfo(names(xe))
+    xe <- raster::subset(xe, subset = which(!se$date %in% excludeDates))
   }
   
   # final sceneinfo data.frame
