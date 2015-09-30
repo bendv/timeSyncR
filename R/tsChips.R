@@ -8,7 +8,7 @@
 #' @param start Date. OptionaL: earliest date ("yyyy-dd-mm") to display.
 #' @param end Date. Optional: latest date ("yyyy-dd-mm") to display.
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
-#' @param excludeDates Date. Vector of dates to be excluded from display. These must be in the format "%Y-%m-%d"
+#' @param excludeDates Date. Vector of dates to be excluded from display. These must be in the format "\%Y-\%m-\%d"
 #' @param cols Character. Name of colour map to use (see display.brewer.all()) or a character vector with two or more colour names or hexadecimal values (as strings) between which to interpolate.
 #' @param nbks Numeric. Number of breaks in the colour map
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.

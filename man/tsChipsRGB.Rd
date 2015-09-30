@@ -20,7 +20,7 @@ tsChipsRGB(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17,
 
 \item{percNA}{Numeric. Maximum allowable \% NA in the cropped image chips}
 
-\item{excludeDates}{Date. Vector of dates to be excluded from display. These must be in the format "%Y-%m-%d"}
+\item{excludeDates}{Date. Vector of dates to be excluded from display. These must be in the format "\%Y-\%m-\%d"}
 
 \item{plot}{Logical. Plot individual band time series?}
 

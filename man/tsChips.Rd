@@ -22,7 +22,7 @@ tsChips(x, loc, start = NULL, end = NULL, buff = 17, percNA = 20,
 
 \item{percNA}{Numeric. Maximum allowable \% NA in the cropped image chips}
 
-\item{excludeDates}{Date. Vector of dates to be excluded from display. These must be in the format "%Y-%m-%d"}
+\item{excludeDates}{Date. Vector of dates to be excluded from display. These must be in the format "\%Y-\%m-\%d"}
 
 \item{cols}{Character. Name of colour map to use (see display.brewer.all()) or a character vector with two or more colour names or hexadecimal values (as strings) between which to interpolate.}
 
