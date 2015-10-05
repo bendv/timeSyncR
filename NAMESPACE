@@ -2,6 +2,7 @@
 
 export(pixelToPolygon)
 export(selectScenes)
+export(stretchBrick)
 export(subsetScenes)
 export(subsetScenesPlot)
 export(tsChips)
