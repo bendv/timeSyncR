@@ -1,4 +1,4 @@
-#' @title Multitemporal linear stretch
+#' @title Multitemporal stretch
 #' 
 #' @description ...work in progress...
 #' 
@@ -7,18 +7,23 @@
 #' @export
 
 
-
-stretchBrick <- function(x, ...) {
+stretchBrick <- function(x, inlo = min(minValue(x)), inup = max(maxValue(x)), outlo = 1, outup = 256, stretch = 'lin',...) {
   
-  INLO <- min(minValue(x))
-  INUP <- max(maxValue(x))
-  OUTLO <- 1
-  OUTUP <- 256
+  ## linear stretch
+  if(stretch == 'lin') {
+    st <- function(y) {
+      ((y - inlo) * ((outup - outlo)/(inup - inlo))) + outlo
+    }
+  } else if(stretch == 'hist') {
+    z <- as.vector(getValues(x))
+    cdf <- ecdf(z[!is.na(z)])
+    st <- function(y) {
+      cdf(y) * (outup - 1)
+    }
+  }
   
-  st <- mc.calc(x, fun = function(y) {
-    ((y - INLO) * ((OUTUP - OUTLO)/(INUP-INLO))) + OUTLO
-  }, ...)
-  
-  return(st)
+  res <- mc.calc(x, fun = st, ...)
+  names(res) <- names(x)
+  return(res)
   
 }

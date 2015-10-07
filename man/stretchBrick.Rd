@@ -2,9 +2,10 @@
 % Please edit documentation in R/stretchBrick.R
 \name{stretchBrick}
 \alias{stretchBrick}
-\title{Multitemporal linear stretch}
+\title{Multitemporal stretch}
 \usage{
-stretchBrick(x, ...)
+stretchBrick(x, inlo = min(minValue(x)), inup = max(maxValue(x)),
+  outlo = 1, outup = 256, stretch = "lin", ...)
 }
 \arguments{
 \item{x}{RasterBrick}
