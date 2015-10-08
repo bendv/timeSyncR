@@ -126,7 +126,8 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   # stretch display brick using multi-temp stretch
   if(!is.null(mtstretch))
     if(mtstretch %in% c('lin', 'hist')) {
-      xe <- lapply(xe, FUN=function(x) stretchBrick(x, stretch = mtstretch))
+      dd <- getZ(xe[[1]])
+      xe <- lapply(xe, FUN=function(x) setZ(stretchBrick(x, stretch = mtstretch), dd))
     }
   
   for(i in seq(1, nlayers(xe[[1]]), by = pps)){

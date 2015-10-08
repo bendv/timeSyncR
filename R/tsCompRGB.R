@@ -98,7 +98,7 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
   # stretch display brick using multi-temp stretch
   if(!is.null(mtstretch)) {
     if(mtstretch %in% c('lin', 'hist')) {
-      xx <- lapply(xcomp, FUN=function(x) stretchBrick(x, stretch = mtstretch))
+      xx <- lapply(xcomp, FUN=function(x) setZ(stretchBrick(x, stretch = mtstretch), yrs))
     } else {
       xx <- xcomp
     }
@@ -111,7 +111,7 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
         b <- brick(raster(xs[[1]], j), raster(xs[[2]], j), raster(xs[[3]], j))
         err <- try({
           plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = names(xs[[1]])[j], col = textcol)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xs[[1]]), col = textcol)
         }, silent = TRUE)
         if(class(err) == "try-error")
           plot.new()
@@ -124,7 +124,7 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
         b <- brick(raster(xs[[1]], j), raster(xs[[2]], j), raster(xs[[3]], j))
         err <- try({
           plotRGB(b, 1, 2, 3, addfun=addfun, ...)
-          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = names(xs[[1]])[j], col = textcol)
+          text(x = (xmin(e) + xmax(e))/2, y = ymin(e) + 2*res(xr)[1], labels = getZ(xs[[1]]), col = textcol)
         }, silent = TRUE)
         #if(class(err) == "try-error")
         # plot.new()
