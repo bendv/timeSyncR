@@ -10,6 +10,7 @@
 #' @param percNA Numeric. Maximum allowable \% NA in the cropped image chips
 #' @param excludeDates Date. Vector of dates to be excluded from display. These must be in the format "\%Y-\%m-\%d"
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
+#' @param mtstretch Character. Apply a multi-temporal stretch before plotting chips? Can be 'lin' or 'hist' for linear or histogram stretch, respectively.
 #' @param plot Logical. Plot individual band time series?
 #' @param exportChips Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)?
 #' @param exportZoo Logical. Export pixel time series as \code{zoo} objects?
@@ -32,7 +33,7 @@
 #' Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 #' 
 
-tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, excludeDates = NULL, nc = 3, nr = 3, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
+tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, percNA = 20, excludeDates = NULL, nc = 3, nr = 3, mtstretch = NULL, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -121,6 +122,11 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   op <- par(mfrow = c(nr, nc))
   pps <- nc * nr
   nscreens <- ceiling(nlayers(xe[[1]]) / pps)
+  
+  # stretch display brick using multi-temp stretch
+  if(mtstretch %in% c('lin', 'hist')) {
+    xe <- lapply(xe, FUN=function(x) stretchBrick(x, stretch = mtstretch))
+  }
   
   for(i in seq(1, nlayers(xe[[1]]), by = pps)){
     if((nlayers(xe[[1]]) - i) <= pps){

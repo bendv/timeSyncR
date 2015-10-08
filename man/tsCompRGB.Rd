@@ -5,9 +5,9 @@
 \title{Image chip composites (RGB version)}
 \usage{
 tsCompRGB(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL,
-  end = NULL, buff = 17, nc = 3, nr = 3, plot = FALSE,
-  exportChips = FALSE, exportZoo = FALSE, textcol = "white",
-  plotlabs = c("red", "green", "blue"), ...)
+  end = NULL, buff = 17, nc = 3, nr = 3, mtstretch = NULL,
+  plot = FALSE, exportChips = FALSE, exportZoo = FALSE,
+  textcol = "white", plotlabs = c("red", "green", "blue"), ...)
 }
 \arguments{
 \item{loc}{Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons or SpatialPoints object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)}
@@ -21,6 +21,8 @@ tsCompRGB(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL,
 \item{end}{Numeric. Optional: latest year to display.}
 
 \item{buff}{Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.}
+
+\item{mtstretch}{Character. Apply a multi-temporal stretch before plotting chips? Can be 'lin' or 'hist' for linear or histogram stretch, respectively.}
 
 \item{plot}{Logical. Plot individual band time series?}
 

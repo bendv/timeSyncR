@@ -10,6 +10,7 @@
 #' @param end Numeric. Optional: latest year to display.
 #' @param buff Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
+#' @param mtstretch Character. Apply a multi-temporal stretch before plotting chips? Can be 'lin' or 'hist' for linear or histogram stretch, respectively.
 #' @param plot Logical. Plot individual band time series?
 #' @param exportChips Logical. Export processed chips to workspace as a list of rasterBricks (R, G, B)?
 #' @param exportZoo Logical. Export pixel time series as \code{zoo} objects?
@@ -30,7 +31,7 @@
 #' Cohen, W. B., Yang, Z., Kennedy, R. (2010). Detecting trends in forest disturbance and recovery using yearly Landsat time series: 2. TimeSync - Tools for calibration and validation. Remote Sensing of Environment, 114(12), 2911-2924.
 #' 
 
-tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, end = NULL, buff = 17, nc = 3, nr = 3, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
+tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, end = NULL, buff = 17, nc = 3, nr = 3, mtstretch = NULL, plot = FALSE, exportChips = FALSE, exportZoo = FALSE, textcol = "white", plotlabs = c('red', 'green', 'blue'), ...) {
   
   # check that all bricks have the same number of layers and are comparable
   if(!compareRaster(xr, xg, xb))
@@ -94,9 +95,16 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
   pps <- nc * nr
   nscreens <- ceiling(nlayers(xcomp[[1]]) / pps)
   
-  for(i in seq(1, nlayers(xcomp[[1]]), by = pps)){
-    if((nlayers(xcomp[[1]]) - i) <= pps){
-      xs <- lapply(xcomp, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
+  # stretch display brick using multi-temp stretch
+  if(mtstretch %in% c('lin', 'hist')) {
+    xx <- lapply(xcomp, FUN=function(x) stretchBrick(x, stretch = mtstretch))
+  } else {
+    xx <- xcomp
+  }
+  
+  for(i in seq(1, nlayers(xx[[1]]), by = pps)){
+    if((nlayers(xx[[1]]) - i) <= pps){
+      xs <- lapply(xx, FUN=function(y) raster::subset(y, subset = c(i:nlayers(y))))
       for(j in 1:nlayers(xs[[1]])){
         b <- brick(raster(xs[[1]], j), raster(xs[[2]], j), raster(xs[[3]], j))
         err <- try({
@@ -108,7 +116,7 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
       }
       par(op)
     } else {
-      xs <- lapply(xcomp, FUN=function(y) raster::subset(y, subset = c(i:(i + pps - 1))))
+      xs <- lapply(xx, FUN=function(y) raster::subset(y, subset = c(i:(i + pps - 1))))
       y <- yrs[i:(i + pps - 1)]
       for(j in 1:nlayers(xs[[1]])){
         b <- brick(raster(xs[[1]], j), raster(xs[[2]], j), raster(xs[[3]], j))
