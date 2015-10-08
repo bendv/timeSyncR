@@ -7,7 +7,7 @@
 #' @export
 
 
-stretchBrick <- function(x, inlo = min(minValue(x)), inup = max(maxValue(x)), outlo = 1, outup = 256, stretch = 'lin',...) {
+stretchBrick <- function(x, inlo = min(minValue(x), na.rm = TRUE), inup = max(maxValue(x), na.rm = TRUE), outlo = 1, outup = 256, stretch = 'lin', ...) {
   
   ## linear stretch
   if(stretch == 'lin') {

@@ -6,7 +6,7 @@
 #' @param loc Location. Can be a vector of length 2 representing the x,y coordinates, or a SpatialPolygons or SpatialPoints object of \code{nrow = 1} (the first row will be taken if \code{nrow(loc) > 1}), or an extent object (which will be extended if a buffer > 0 is given; see below)
 #' @param fun Function to apply over each pixel for each year. See \code{\link{annualSummary}} for more info.
 #' @param na.rm Logical. Remove NA's when calculating fun over each year? If \code{fun} is a function that does not take a \code{na.rm} value, set \code{na.rm} to \code{NULL}.
-#' @param start Numeric. OptionaL: earliest year to display.
+#' @param start Numeric. Optional: earliest year to display.
 #' @param end Numeric. Optional: latest year to display.
 #' @param buff Numeric. Number of pixels to buffer the location in all directions. A higher buffer will essentially zoom out.
 #' @param nc/nr Numeric. Number of columns and rows to plot, respectively. If the number of layers is greater than \code{nc*nr}, a screen prompt will lead to the next series of plots. These cannot exceed 4.
@@ -102,6 +102,8 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
     } else {
       xx <- xcomp
     }
+  } else {
+    xx <- xcomp
   }
   
   for(i in seq(1, nlayers(xx[[1]]), by = pps)){
