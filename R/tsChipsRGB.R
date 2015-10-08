@@ -124,7 +124,7 @@ tsChipsRGB <- function(xr, xg, xb, loc, start = NULL, end = NULL, buff = 17, per
   nscreens <- ceiling(nlayers(xe[[1]]) / pps)
   
   # stretch display brick using multi-temp stretch
-  if(mtstretch %in% c('lin', 'hist')) {
+  if(!is.null(mtstretch) & mtstretch %in% c('lin', 'hist')) {
     xe <- lapply(xe, FUN=function(x) stretchBrick(x, stretch = mtstretch))
   }
   

@@ -96,7 +96,7 @@ tsCompRGB <- function(xr, xg, xb, loc, fun = mean, na.rm = TRUE, start = NULL, e
   nscreens <- ceiling(nlayers(xcomp[[1]]) / pps)
   
   # stretch display brick using multi-temp stretch
-  if(mtstretch %in% c('lin', 'hist')) {
+  if(!is.null(mtstretch) & mtstretch %in% c('lin', 'hist')) {
     xx <- lapply(xcomp, FUN=function(x) stretchBrick(x, stretch = mtstretch))
   } else {
     xx <- xcomp
