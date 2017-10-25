@@ -20,7 +20,13 @@ pixelToPolygon <- function(x, cell, plot = FALSE) {
   }
   
   # define extent
-  e <- extent(c(cell[1], cell[1] + res(x)[1], cell[2], cell[2] + res(x)[2]))
+  # note that cellFromXY() retrieves the centre of the pixel -- we need the top-left for xmin,ymin
+  shift <- res(x)[1] / 2
+  e <- extent(c(
+    cell[1] - shift, 
+    cell[1] + shift, 
+    cell[2] - shift, 
+    cell[2] + shift))
   
   # convert to polygons and set projection
   e <- as(e, "SpatialPolygons")
